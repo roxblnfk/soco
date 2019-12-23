@@ -1,0 +1,35 @@
+{
+    "name": "roxblnfk/soco",
+    "type": "library",
+    "description": "Socoban Console",
+    "keywords": [
+        "socoban",
+        "console"
+    ],
+    "license": "BSD-3-Clause",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "bin": [
+        "bin/soco"
+    ],
+    "config": {
+        "sort-packages": true
+    },
+    "require": {
+        "php": "^7.4",
+        "symfony/console": "^4.0|^5.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "roxblnfk\\Soco\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "roxblnfk\\Soco\\Tests\\": "tests"
+        }
+    }
+}
