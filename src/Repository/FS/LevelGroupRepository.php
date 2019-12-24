@@ -19,21 +19,26 @@ class LevelGroupRepository extends BaseObjectRepository implements LevelGroupRep
     }
 
     /**
-     * @param string $filePath
+     * @param string     $filePath
+     * @param LevelGroup $group
      * @return array
      * @throws \Exception
      */
-    public static function parseTxtSocoLevelFile(string $filePath): array
+    public static function parseTxtSocoLevelFile(string $filePath, ?LevelGroup $group = null): array
     {
         $levels = [];
         $content = file_get_contents($filePath);
         $boxes = explode("\r\n\r\n", $content);
 
+        $groupLines = [];
+        $levelsBody = false;
+
         foreach ($boxes as $box) {
             $box = trim($box);
-            $lines = explode("\n", $box);
-            if ($box === '')
+            if ($box === '') {
                 continue;
+            }
+            $lines = explode("\n", $box);
             $mapMode = true;
             $mapLines = [];
             $header = 'comment';
@@ -57,8 +62,13 @@ class LevelGroupRepository extends BaseObjectRepository implements LevelGroupRep
                     $mapHeaders[$header] .= " {$line}";
                 }
             }
-            if (!$mapLines)
-                throw new \Exception('Bad level\'s box');
+            if (!$mapLines) {
+                if (!$levelsBody) {
+                    $groupLines[] = $box;
+                }
+                continue;
+            }
+            $levelsBody = true;
             $level = new Level();
 
             $level->tiles = TilesModel::createFromString(implode("\r\n", $mapLines), false);
@@ -66,10 +76,14 @@ class LevelGroupRepository extends BaseObjectRepository implements LevelGroupRep
             $level->levelName = $mapHeaders['name'] ?? $mapHeaders['title'] ??  '';
             $level->description = $mapHeaders['description'] ?? $mapHeaders['comment'] ?? '';
             $level->createdAt = new \DateTimeImmutable($mapHeaders['date'] ?? null);
-
+            if ($group !== null) {
+                $level->levelGroup = $group;
+            }
             $levels[] = $level;
         }
-
+        if ($group !== null) {
+            $group->description = implode("\r\n", $groupLines);
+        }
         return $levels;
     }
 }

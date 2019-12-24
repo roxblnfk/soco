@@ -29,7 +29,7 @@ return [
             $group->groupName = $name;
             $group->description = $filePath;
             try {
-                $levels = LevelGroupRepository::parseTxtSocoLevelFile($filePath);
+                $levels = LevelGroupRepository::parseTxtSocoLevelFile($filePath, $group);
                 $group->levels = new LevelRepository($levels);
             } catch (\Exception $e) {
                 continue;
