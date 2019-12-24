@@ -8,7 +8,7 @@ namespace roxblnfk\Soco\Collection;
 
 use roxblnfk\Soco\Exception\NotFoundException;
 use roxblnfk\Soco\Level\TileObjectModel;
-use roxblnfk\Soco\Repository\BaseObjectRepository;
+use roxblnfk\Soco\Repository\FS\BaseObjectRepository;
 
 class LevelTileCollection extends BaseObjectRepository {
 

@@ -14,10 +14,10 @@ class ConsoleColorSymbolMap extends AbstractSymbolMap
         '<fg=cyan>@</>'   => [2, 0],
         '<fg=red>@</>'    => [3, 0],
         ' '               => [2],
-        '<fg=yellow>×</>'    => [3],
+        '<fg=yellow>×</>' => [3],
         '<fg=white>#</>'  => [4],
-        '<fg=red>O</>' => [2, 5],
-        '<fg=yellow>Θ</>'    => [3, 5],
+        '<fg=red>O</>'    => [2, 5],
+        '<fg=green>Θ</>'  => [3, 5],
         '<bg=cyan>F</>'   => [1],
     ];
 }

@@ -4,11 +4,12 @@
  * Date: 16.06.2019
  */
 
-namespace roxblnfk\Soco\Repository;
+namespace roxblnfk\Soco\Repository\FS;
 
 use Collections\Vector;
+use roxblnfk\Soco\Repository\RepositoryInterface;
 
-class BaseObjectRepository
+class BaseObjectRepository implements RepositoryInterface
 {
     protected Vector $collection;
     protected string $primaryKey = 'id';
@@ -37,7 +38,7 @@ class BaseObjectRepository
         ];
     }
 
-    public function find($id): object
+    public function find($id): ?object
     {
         $pk = $this->primaryKey;
         return $this->collection->filter(function ($el) use (&$id, &$pk) { return $el->$pk === $id; })->first();
@@ -88,10 +89,10 @@ class BaseObjectRepository
         return $collection;
     }
 
-    // public function findOneBy(array $criteria) {
-    //     $criteriaObj = new Criteria($criteria);
-    //     return $this->collection->matching($criteriaObj)->first();
-    // }
+    public function findOneBy(array $criteria): ?Object
+    {
+        return $this->findBy($criteria)->first();
+    }
 
     public function getRandom(): ?object
     {
@@ -102,4 +103,5 @@ class BaseObjectRepository
         $key = mt_rand(0, $count - 1);
         return $this->collection->at($key);
     }
+
 }
