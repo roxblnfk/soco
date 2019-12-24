@@ -43,7 +43,7 @@ class TilesModel implements \Serializable
 
     /**
      * @param string      $string
-     * @param bool        $repair
+     * @param bool|array  $repair
      * @param string|null $inputSymbolMap
      * @return TilesModel
      *
@@ -51,7 +51,7 @@ class TilesModel implements \Serializable
      */
     public static function createFromString(
         string $string,
-        bool $repair = true,
+        $repair = true,
         ?string $inputSymbolMap = StandardSymbolMap::class
     ): TilesModel
     {

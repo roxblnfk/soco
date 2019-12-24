@@ -92,20 +92,6 @@ class PlayCommand extends Command
             $game->process();
         } while (true);
 
-
-        $screen->redraw();
-
-
-        print_r($screen->getScreenSize());
-
-        if ($levelId) {
-            $this->io->note(sprintf('You passed an argument: %s', $levelId));
-        }
-
-        // if ($input->getOption('option1')) {
-        //     // ...
-        // }
-
-        $this->io->success('You have a new command! Now make it your own! Pass --help to see your options.');
+        return 0;
     }
 }
