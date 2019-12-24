@@ -36,7 +36,7 @@ use Symfony\Component\Console\Application;
 
     $application = new Application();
     $commandMap = [
-        'play' => Command\SocoPlayCommand::class,
+        'play' => Command\PlayCommand::class,
     ];
     $application->setCommandLoader(new SocoCommandLoader($commandMap));
     $application->run();
