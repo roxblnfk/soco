@@ -1,12 +1,12 @@
 {
     "name": "roxblnfk/soco",
     "type": "library",
-    "description": "Socoban Console",
+    "description": "Sokoban Console",
     "keywords": [
-        "socoban",
+        "sokoban",
         "console"
     ],
-    "license": "BSD-3-Clause",
+    "license": "MIT",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "bin": [
