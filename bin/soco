@@ -1,9 +1,10 @@
 #!/usr/bin/env php
 <?php
 
+use DI\ContainerBuilder;
 use roxblnfk\Soco\Console\Command;
-use roxblnfk\Soco\Console\SocoCommandLoader;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
 
 (static function () {
     $cwd = getcwd();
@@ -38,6 +39,11 @@ use Symfony\Component\Console\Application;
     $commandMap = [
         'play' => Command\PlayCommand::class,
     ];
-    $application->setCommandLoader(new SocoCommandLoader($commandMap));
+    # container
+    $builder = new ContainerBuilder();
+    $builder->addDefinitions(dirname(__DIR__) . '/config/console.php');
+    $container = $builder->build();
+
+    $application->setCommandLoader(new ContainerCommandLoader($container, $commandMap));
     $application->run();
 })();
