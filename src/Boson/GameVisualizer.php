@@ -35,15 +35,16 @@ class GameVisualizer
 
     public function update()
     {
-        $state = $this->state ?: $this->gameRules->stateString;
-
+        $state = \json_encode($this->state ?: $this->gameRules->stateString);
         $json = \json_encode($this->levelTiles);
-        $this->webView->eval(<<<JS
-            renderLevel({$json}, "{$state}");
-            JS);
+
         $finished = $this->activeGame->isFinished();
-        if (is_bool($finished)) {
-            tr($finished ? '  > VICTORY! <  ' : '  > DEFEAT! <  ');
+        if (\is_bool($finished)) {
+            $state = $finished ? \json_encode('  > VICTORY! <  ') : \json_encode('  > DEFEAT! <  ');
         }
+
+        $this->webView->eval(<<<JS
+            renderLevel({$json}, {$state});
+            JS);
     }
 }
