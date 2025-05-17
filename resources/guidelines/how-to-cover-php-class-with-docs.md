@@ -79,11 +79,13 @@ Use extended type annotations for more precise type information:
 
 ```php
 /**
- * @param non-empty-string $id Unique identifier that cannot be empty
- * @param positive-int $count Only positive integers (> 0)
- * @param class-string<\Exception> $exceptionClass Class name that extends Exception
- * @param callable(string): bool $validator Function that takes string and returns bool
- * @return array<non-empty-string, object> Associative array with non-empty string keys
+ * @param non-empty-string $id Unique identifier that cannot be empty.
+ * @param int<1, max> $count Only positive integers (> 0).
+ * @param class-string<\Exception> $exceptionClass Class name that extends Exception.
+ * @param callable(string): bool $validator Function that takes string and returns bool.
+ * @param int<0, max> $someFlag Very long comment that is not fit for a single line may be
+ *        written in multiple lines. Make sure to use the same indentation.
+ * @return array<non-empty-string, object> Associative array with non-empty string keys.
  */
 ```
 

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sokoban Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #342e2e;
+        }
+        #game-container {
+            text-align: center;
+        }
+        #game-canvas {
+            border: 2px solid #333;
+            background-color: #2b2626;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Sokoban</h1>
+        <canvas id="game-canvas" width="600" height="400"></canvas>
+        <div class="controls">
+            <p>Use arrow keys or WASD to move</p>
+        </div>
+    </div>
+
+    <script>
+        // Global keyboard function that will be called when a key is pressed
+        function keyboard(key) {
+            console.log('Key pressed:', key);
+            // This function will be implemented on the backend
+        }
+
+        // Handle keyboard events
+        document.addEventListener('keydown', function(event) {
+            // Prevent default actions for arrow keys and WASD
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+                 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].includes(event.key)) {
+                event.preventDefault();
+            }
+
+            // Call the global keyboard function with the pressed key
+            keyboard(event.key);
+        });
+
+        // Initialize the game
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sokoban game initialized');
+            // Any initialization code can go here
+        });
+    </script>
+</body>
+</html>
