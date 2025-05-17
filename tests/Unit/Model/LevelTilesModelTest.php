@@ -9,15 +9,15 @@
  * file that was distributed with this source code.
  */
 
-namespace roxblnfk\Soco\Tests\Model;
+namespace roxblnfk\Soco\Tests\Unit\Model;
 
-use roxblnfk\Soco\Level\TilesModel;
-use roxblnfk\Soco\Collection\LevelTileCollection;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use roxblnfk\Soco\Collection\LevelTileCollection;
+use roxblnfk\Soco\Level\TilesModel;
 use Throwable;
 
 class LevelTilesModelTest extends TestCase
