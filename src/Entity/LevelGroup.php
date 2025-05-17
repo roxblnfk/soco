@@ -6,10 +6,9 @@
 
 namespace roxblnfk\Soco\Entity;
 
-use Collections\Vector;
 use roxblnfk\Soco\Repository\LevelRepositoryInterface;
 
-class LevelGroup implements \Serializable
+class LevelGroup
 {
     public ?int $id = null;
     public string $groupName;
@@ -19,11 +18,11 @@ class LevelGroup implements \Serializable
      */
     public $levels;
 
-    public function serialize(): string
+    public function __serialize(): array
     {
-        return serialize([$this->id, $this->groupName, $this->description]);
+        return [$this->id, $this->groupName, $this->description];
     }
-    public function unserialize($serialized): void
+    public function __unserialize($serialized): void
     {
         [$this->id, $this->groupName, $this->description] = unserialize($serialized, ['allowed_classes' => false]);
     }

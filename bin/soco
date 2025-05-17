@@ -35,6 +35,8 @@ use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
     }
     require_once $autoloadPath;
 
+    error_reporting(tr(E_ALL & ~E_USER_DEPRECATED & ~E_DEPRECATED));
+
     $application = new Application();
     $commandMap = [
         'play' => Command\PlayCommand::class,

@@ -4,8 +4,9 @@
  * Date: 16.06.2019
  */
 
-namespace roxblnfk\Soco;
+namespace roxblnfk\Soco\Console;
 
+use roxblnfk\Soco\ActiveGameModel;
 use roxblnfk\Soco\Collection\ActionHistory;
 use roxblnfk\Soco\Collection\CommandQueue;
 use roxblnfk\Soco\Console\Helper\Screen;

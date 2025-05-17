@@ -6,7 +6,6 @@
 
 namespace roxblnfk\Soco\Console\Helper;
 
-use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -91,5 +90,4 @@ class Screen
             $this->output->writeln('');
         }
     }
-
 }

@@ -15,7 +15,7 @@ use roxblnfk\Soco\Gameplay\Action\RestartLevelAction;
 use roxblnfk\Soco\Gameplay\Action\RollbackAction;
 use roxblnfk\Soco\Gameplay\Command\Command;
 
-class ConsoleControl extends AbstractControl
+class WasdControl extends AbstractControl
 {
     public function sendSignal($signal)
     {

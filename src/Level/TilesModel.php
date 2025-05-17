@@ -1,37 +1,70 @@
 <?php
 /**
+ * Class representing a level's tile structure and operations.
+ *
  * @author roxblnfk
  * Date: 16.06.2019
  */
 
 namespace roxblnfk\Soco\Level;
 
+use JsonSerializable;
 use roxblnfk\Soco\Collection\LevelTileCollection;
 use roxblnfk\Soco\Exception\NotFoundException;
 use roxblnfk\Soco\SymbolMap\AbstractSymbolMap;
 use roxblnfk\Soco\SymbolMap\StandardSymbolMap;
 use SplQueue;
 
-class TilesModel implements \Serializable
+/**
+ * Represents the level's tile structure and provides operations for manipulation.
+ *
+ * This class manages a 3D grid of tiles for a game level where:
+ * - First coordinate (X) represents horizontal position
+ * - Second coordinate (Y) represents vertical position
+ * - Third coordinate (Z) represents the layer (0 for terrain, 1 for objects)
+ *
+ * The class supports serialization, creation from string representation,
+ * and various transformation operations like rotation and flipping.
+ */
+class TilesModel implements JsonSerializable
 {
     /**
-     * Tiles: [x][y][z] => [LevelTerrainModel, LevelObjectModel]
+     * 3D array of tiles organized by coordinates.
+     * Structure: [x][y][z] where z=0 is terrain and z=1 is object
      *
      * @var TileObjectModel[][][]
-     *
      */
-    public $tiles;
+    public array $tiles;
 
-    /** Width */
+    /**
+     * Width of the level
+     * @var int|null
+     */
     public ?int $w;
-    /** Height */
+
+    /**
+     * Height of the level
+     * @var int|null
+     */
     public ?int $h;
 
-    public array $cars = [];
-
+    /**
+     * Class name of the symbol map used for input
+     * @var string
+     */
     public $inputSymbolMap = StandardSymbolMap::class;
-    public $outputSymbolMap = StandardSymbolMap::class;
 
+    /**
+     * Class name of the symbol map used for output
+     * @var class-string<AbstractSymbolMap>
+     */
+    public string $outputSymbolMap;
+
+    /**
+     * Constructor initializes the tile model with provided values
+     *
+     * @param array $values Initial values for the model
+     */
     public function __construct($values = [])
     {
         $this->w = $values['w'] ?? null;
@@ -42,22 +75,27 @@ class TilesModel implements \Serializable
     }
 
     /**
-     * @param string      $string
-     * @param bool|array  $repair
-     * @param string|null $inputSymbolMap
-     * @return TilesModel
+     * Creates a TilesModel from a string representation of a level
      *
-     * @throws NotFoundException
+     * Parses a string into a tile structure, with each character mapped to a tile
+     * through the symbol map. Validates that a player exists in the level.
+     *
+     * @param string      $string         String representation of the level
+     * @param bool|array  $repair         Whether to repair and validate the level
+     * @param class-string<AbstractSymbolMap>|null $inputSymbolMap Symbol map class to use for interpretation
+     *
+     * @return TilesModel New instance created from the string
+     * @throws NotFoundException If player character not found in the level
      */
     public static function createFromString(
         string $string,
-        $repair = true,
+        array|bool $repair = true,
         ?string $inputSymbolMap = StandardSymbolMap::class
     ): TilesModel
     {
         $outputMap = $inputSymbolMap ?? StandardSymbolMap::class;
         # exists player
-        $playerSymbols = array_keys(call_user_func([$outputMap, 'getAllSymbolsWithId'], 0));
+        $playerSymbols = array_keys($outputMap::getAllSymbolsWithId(0));
         $playerExists = false;
         foreach ($playerSymbols as $sym) {
             $bullPos = mb_strpos($string, $sym);
@@ -65,8 +103,8 @@ class TilesModel implements \Serializable
                 continue;
             $playerExists = true;
         }
-        if (!$playerExists)
-            throw new NotFoundException('@Player not found');
+
+        $playerExists or throw new NotFoundException('@Player not found');
 
         $lines = explode("\n", trim($string));
         $tiles = [];
@@ -94,7 +132,12 @@ class TilesModel implements \Serializable
     }
 
     /**
-     * @return SplQueue|int[]|TileObjectModel[]
+     * Finds and returns all player objects in the level
+     *
+     * Searches through all tiles to find objects with ID=0 (players)
+     * and returns them in a queue.
+     *
+     * @return SplQueue|int[]|TileObjectModel[] Queue of player objects with their coordinates set
      */
     public function findPlayers(): SplQueue
     {
@@ -113,6 +156,14 @@ class TilesModel implements \Serializable
         return $players;
     }
 
+    /**
+     * Converts the level to a string representation
+     *
+     * Creates a string where each tile is represented by a character
+     * according to the output symbol map.
+     *
+     * @return string String representation of the level
+     */
     public function levelToString(): string
     {
         /** @var string[] $lines */
@@ -140,9 +191,11 @@ class TilesModel implements \Serializable
             return $res;
         };
         /**
-         * @param int $x
-         * @param int $y
-         * @return bool
+         * Checks if a position is surrounded by walls or earth tiles
+         *
+         * @param int $x X-coordinate
+         * @param int $y Y-coordinate
+         * @return bool True if surrounded by immovable tiles
          */
         $fn_wallOrEarth = function ($x, $y): bool {
             $coords = [[$x + 1, $y], [$x - 1, $y], [$x, $y + 1], [$x, $y - 1] ];
@@ -184,11 +237,21 @@ class TilesModel implements \Serializable
         }
         return implode("\n", $lines) . "\n";
     }
+
     /**
-     * @param array $repairs
-     * @throws \Exception
+     * Repairs and validates the level
+     *
+     * Performs various checks and repairs on the level to ensure it's valid:
+     * - Removes objects that are locked (on walls)
+     * - Adds ground under objects if needed
+     * - Removes objects without ground
+     * - Removes tiles that cannot be reached by the player
+     * - Adds walls where needed
+     *
+     * @param array $repairs Configuration of which repairs to perform
+     * @throws \Exception If no player is found in the level
      */
-    public function repairAndCheck(array $repairs = [])
+    public function repairAndCheck(array $repairs = []): array
     {
         # repairs:
         # Delete locked objects (objects on walls)
@@ -287,11 +350,13 @@ class TilesModel implements \Serializable
                 }
             };
             /**
-             * @param $x
-             * @param $y
-             * @param null $direct
-             * @param bool $corners
-             * @return int[][]
+             * Gets tiles around a specified position
+             *
+             * @param int $x X-coordinate
+             * @param int $y Y-coordinate
+             * @param null|int $direct Direction to exclude
+             * @param bool $corners Whether to include corner tiles
+             * @return int[][] Array of surrounding tile coordinates
              */
             $fn_getTilesAround = function ($x, $y, $direct = null, $corners = false) use (&$matrix) {
                 $ret = [ [$x, $y - 1, 1], [$x, $y + 1, 0], [$x - 1, $y, 3], [$x + 1, $y, 2] ];
@@ -314,11 +379,12 @@ class TilesModel implements \Serializable
                 return $ret;
             };
             /**
+             * Calculates the type of a tile and marks it in the matrix
              *
-             * @param $x
-             * @param $y
-             * @param null|false|int $direct remove tile from result: 0 - up; 1 - down; 2 - left; 3 - right
-             * @return bool|int[][]
+             * @param int $x X-coordinate
+             * @param int $y Y-coordinate
+             * @param null|false|int $direct Direction to exclude
+             * @return bool|int[][] False or array of tiles to process next
              */
             $fn_calcTile = function ($x, $y, $direct = null) use (&$matrix, &$box, &$fn_getTilesAround, &$rep05, $fn_addLine, $fn_addCol) {
                 # aboard
@@ -420,7 +486,12 @@ class TilesModel implements \Serializable
     }
 
     /**
-     * @param int $direction 1 - to right; 2 - double; -1 or 3 - to left
+     * Rotates the level in a specified direction
+     *
+     * @param int $direction Rotation direction:
+     *        1 - to right (90° clockwise)
+     *        2 - double (180°)
+     *        -1 or 3 - to left (90° counterclockwise)
      */
     public function rotate($direction = 0): void
     {
@@ -450,8 +521,11 @@ class TilesModel implements \Serializable
             }
         }
     }
+
     /**
-     * @param bool $horizontal
+     * Flips the level horizontally or vertically
+     *
+     * @param bool $horizontal True for horizontal flip, false for vertical
      */
     public function flip($horizontal = true): void
     {
@@ -465,11 +539,20 @@ class TilesModel implements \Serializable
             }
         }
     }
-    // TODO
+
+    /**
+     * Normalizes the level's coordinates
+     *
+     * TODO: Implementation pending
+     */
     public function normalizeLevel() {}
 
     /**
+     * Serializes the model to a string
+     *
      * {@inheritdoc}
+     *
+     * @return string Serialized representation
      */
     public function serialize(): string
     {
@@ -479,11 +562,16 @@ class TilesModel implements \Serializable
             $this->serializeTiles(),
         ]);
     }
+
     /**
+     * Unserializes the model from a string
+     *
      * {@inheritdoc}
-     * @throws \Exception
+     *
+     * @param string $serialized Serialized representation
+     * @throws \Exception If there is an error during unserialization
      */
-    public function unserialize($serialized): void
+    public function unserialize(string $serialized): void
     {
         [
             $this->w,
@@ -504,9 +592,12 @@ class TilesModel implements \Serializable
         }
         $this->tiles = $res;
     }
+
     /**
-     * @param int $h
-     * @return TilesModel
+     * Sets the height of the level
+     *
+     * @param int $h New height value
+     * @return TilesModel Self for method chaining
      */
     public function setH(int $h): TilesModel
     {
@@ -515,8 +606,10 @@ class TilesModel implements \Serializable
     }
 
     /**
-     * @param mixed[][] $array
-     * @return int[] $box = [ x:begin, y:begin, x:end, y:end ]
+     * Gets the bounding box of the level
+     *
+     * @param mixed[][] $array The array to calculate bounds for
+     * @return int[] Bounding box as [x:begin, y:begin, x:end, y:end]
      */
     protected function getBoxSize(array &$array): array
     {
@@ -538,10 +631,13 @@ class TilesModel implements \Serializable
         }
         return $box;
     }
+
     /**
-     * @param array $array
-     * @param null|int $minKey
-     * @param null|int $maxKey
+     * Reverses an array within specified key bounds
+     *
+     * @param array $array Array to reverse
+     * @param null|int $minKey Minimum key to include
+     * @param null|int $maxKey Maximum key to include
      */
     protected function array_reverse(array &$array, $minKey = null, $maxKey = null): void
     {
@@ -566,9 +662,11 @@ class TilesModel implements \Serializable
         // */
         $array = $ret;
     }
+
     /**
-     * @param mixed[][] $array
-     * @return mixed[][]
+     * Transposes a 2D matrix (swaps rows and columns)
+     *
+     * @param mixed[][] $array Array to transpose
      */
     protected function array_matrix_transpose(array &$array): void
     {
@@ -587,8 +685,11 @@ class TilesModel implements \Serializable
         }
         $array = $ret;
     }
+
     /**
-     * @return array
+     * Serializes tiles data for the serialize() method
+     *
+     * @return array Serialized tiles data
      */
     protected function serializeTiles(): array
     {
@@ -601,5 +702,14 @@ class TilesModel implements \Serializable
             }
         }
         return $res;
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'w' => $this->w,
+            'h' => $this->h,
+            'tiles' => $this->tiles,
+        ];
     }
 }

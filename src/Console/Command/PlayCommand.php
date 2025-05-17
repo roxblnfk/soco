@@ -7,29 +7,24 @@
 namespace roxblnfk\Soco\Console\Command;
 
 use roxblnfk\Soco\ActiveGameModel;
+use roxblnfk\Soco\Console\GameVisualizer;
 use roxblnfk\Soco\Console\Helper\Screen;
-use roxblnfk\Soco\Control\ConsoleControl;
-use roxblnfk\Soco\Entity\Level;
-use roxblnfk\Soco\GameVisualizer;
+use roxblnfk\Soco\Control\WasdControl;
 use roxblnfk\Soco\Repository\LevelGroupRepositoryInterface;
 use roxblnfk\Soco\Repository\LevelRepositoryInterface;
 use roxblnfk\Soco\SymbolMap\ConsoleColorSymbolMap;
-use roxblnfk\Soco\SymbolMap\ConsoleSymbolMap;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\StreamableInputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand('play')]
 class PlayCommand extends Command
 {
-    protected static $defaultName = 'play';
-
     protected SymfonyStyle $io;
-    protected array $screen = [];
-
     protected LevelRepositoryInterface $LevelRepository;
     protected LevelGroupRepositoryInterface $groupRepository;
 
@@ -56,7 +51,7 @@ class PlayCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $levelId = $input->getArgument('LevelId');
 
@@ -80,7 +75,7 @@ class PlayCommand extends Command
         strlen($level->levelName) and $title[] = $level->levelName;
         $visualizer->title = implode(' -> ', $title);
 
-        $controlsManager = new ConsoleControl($game->getCommandsQueue());
+        $controlsManager = new WasdControl($game->getCommandsQueue());
 
         do {
             $visualizer->update();
@@ -91,7 +86,5 @@ class PlayCommand extends Command
             $controlsManager->sendSignal($input);
             $game->process();
         } while (true);
-
-        return 0;
     }
 }
