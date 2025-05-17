@@ -8,6 +8,7 @@
 
 namespace roxblnfk\Soco\Level;
 
+use JsonSerializable;
 use roxblnfk\Soco\Collection\LevelTileCollection;
 use roxblnfk\Soco\Exception\NotFoundException;
 use roxblnfk\Soco\SymbolMap\AbstractSymbolMap;
@@ -25,7 +26,7 @@ use SplQueue;
  * The class supports serialization, creation from string representation,
  * and various transformation operations like rotation and flipping.
  */
-class TilesModel
+class TilesModel implements JsonSerializable
 {
     /**
      * 3D array of tiles organized by coordinates.
@@ -570,7 +571,7 @@ class TilesModel
      * @param string $serialized Serialized representation
      * @throws \Exception If there is an error during unserialization
      */
-    public function unserialize($serialized): void
+    public function unserialize(string $serialized): void
     {
         [
             $this->w,
@@ -701,5 +702,14 @@ class TilesModel
             }
         }
         return $res;
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'w' => $this->w,
+            'h' => $this->h,
+            'tiles' => $this->tiles,
+        ];
     }
 }

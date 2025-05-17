@@ -19,6 +19,6 @@ class RunTest extends TestCase {
 
         $command = $container->get(\roxblnfk\Soco\Boson\PlayCommand::class);
         $tester = new CommandTester($command);
-        $tester->execute([], []);
+        self::assertSame(0, $tester->execute([], []));
     }
 }

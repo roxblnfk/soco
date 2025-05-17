@@ -6,9 +6,10 @@
 
 namespace roxblnfk\Soco\Level;
 
+use JsonSerializable;
 use roxblnfk\Soco\Collection\LevelTileCollection;
 
-class TileObjectModel implements \Serializable
+class TileObjectModel implements JsonSerializable
 {
     /** Tile ID */
     public int $id;
@@ -72,11 +73,16 @@ class TileObjectModel implements \Serializable
         // return serialize([$this->id, $this->serializeExtras()]);
     }
 
-    public function unserialize($serialized): void
+    public function unserialize(string $serialized): void
     {
         [$id] = unserialize($serialized, ['allowed_classes' => false]);
         // [$id, $extras] = unserialize($serialized, ['allowed_classes' => false]);
         $values = LevelTileCollection::getTileFromId($id, true);
         $this->fillFields($values);
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 }

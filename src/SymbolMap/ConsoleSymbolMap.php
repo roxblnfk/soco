@@ -5,9 +5,9 @@ namespace roxblnfk\Soco\SymbolMap;
 
 class ConsoleSymbolMap extends AbstractSymbolMap
 {
-    protected static $undefinedSymbol = '?';
-    protected static $outBorderSymbol = ' ';
-    protected static $symbolMap = [
+    protected static string $undefinedSymbol = '?';
+    protected static string $outBorderSymbol = ' ';
+    protected static array $symbolMap = [
         '@' => [2, 0],
         'A' => [3, 0],
         ' ' => [2],

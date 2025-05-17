@@ -25,18 +25,30 @@
         .controls {
             margin-top: 20px;
         }
+        #level-container {
+            display: grid;
+            margin: 20px auto;
+        }
     </style>
 </head>
 <body>
     <div id="game-container">
         <h1>Sokoban</h1>
-        <canvas id="game-canvas" width="600" height="400"></canvas>
-        <div class="controls">
-            <p>Use arrow keys or WASD to move</p>
-        </div>
+        <div id="level-container"></div>
+        <div class="controls" id="game-status"></div>
     </div>
 
     <script>
+        // Assets map - tile id to image file
+        const tilesMap = {
+            0: 'classic/B1.gif',
+            1: 'classic/A0.gif',
+            2: 'classic/A0.gif',
+            3: 'classic/A1.gif',
+            4: 'classic/A2.gif',
+            5: 'classic/B2.gif'
+        };
+
         // Global keyboard function that will be called when a key is pressed
         function keyboard(key) {
             console.log('Key pressed:', key);
@@ -55,10 +67,66 @@
             keyboard(event.key);
         });
 
+        // Render level based on JSON data
+        function renderLevel(levelData, status) {
+            const levelContainer = document.getElementById('level-container');
+            const statusLine = document.getElementById('game-status');
+            levelContainer.innerHTML = '';
+            statusLine.textContent = status || 'Use arrow keys or WASD to move';
+
+            // Set the grid dimensions
+            levelContainer.style.gridTemplateColumns = `repeat(${levelData.w}, 32px)`;
+            levelContainer.style.gridTemplateRows = `repeat(${levelData.h}, 32px)`;
+
+            // Iterate through the tiles array and create elements
+            for (let y = 0; y < levelData.h; y++) {
+                for (let x = 0; x < levelData.w; x++) {
+                    // Create tile container
+                    const tileContainer = document.createElement('div');
+                    tileContainer.className = 'tile';
+                    tileContainer.dataset.x = x;
+                    tileContainer.dataset.y = y;
+
+                    // Check if we have tile data for this position
+                    if (levelData.tiles[x] && levelData.tiles[x][y]) {
+                        const tileStack = levelData.tiles[x][y];
+
+                        // Add each layer in the stack
+                        tileStack.forEach((tile, layerIndex) => {
+                            const tileLayer = document.createElement('div');
+                            tileLayer.className = 'tile-layer';
+                            tileLayer.dataset.layer = layerIndex;
+
+                            // Get the correct image based on tile id
+                            if (tilesMap[tile.id] !== undefined) {
+                                tileLayer.style.backgroundImage = `url('soco://localhost/${tilesMap[tile.id]}')`;
+                                tileLayer.style.backgroundSize = '32px 32px';
+                            }
+
+                            tileContainer.appendChild(tileLayer);
+                        });
+                    }
+
+                    levelContainer.appendChild(tileContainer);
+                }
+            }
+        }
+
+        // Function to load level data from server
+        function loadLevel(levelId) {
+            // Here you would typically fetch the level from the server
+            // For now, we'll use a placeholder function
+            console.log(`Loading level: ${levelId}`);
+            // Fetch could be implemented here
+        }
+
         // Initialize the game
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Sokoban game initialized');
-            // Any initialization code can go here
+
+            // Example usage - you can replace this with actual level loading
+            const exampleLevel = {"w":6,"h":6,"tiles":[[[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}]],[[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}]],[[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""},{"id":0,"layer":1,"canMove":1,"power":15,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}]],[[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":3,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""},{"id":5,"layer":1,"canMove":1,"power":10,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}]],[[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":3,"layer":0,"canMove":1,"power":0,"texture":""},{"id":5,"layer":1,"canMove":1,"power":10,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":2,"layer":0,"canMove":1,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}]],[[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}],[{"id":4,"layer":0,"canMove":0,"power":0,"texture":""}]]]};
+            renderLevel(exampleLevel);
         });
     </script>
 </body>

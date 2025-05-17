@@ -6,24 +6,19 @@
 
 namespace roxblnfk\Soco\Boson;
 
-use Boson\ApplicationPollerInterface;
 use Boson\Bridge\Static\FilesystemStaticAdapter;
 use Boson\WebView\Event\WebViewRequest;
 use Boson\WebView\WebViewCreateInfo;
 use Boson\Window\WindowCreateInfo;
-use Buggregator\Trap\Processable;
 use roxblnfk\Soco\ActiveGameModel;
-use roxblnfk\Soco\Console\Helper\Screen;
 use roxblnfk\Soco\Control\WasdControl;
-use roxblnfk\Soco\GameVisualizer;
 use roxblnfk\Soco\Repository\LevelGroupRepositoryInterface;
 use roxblnfk\Soco\Repository\LevelRepositoryInterface;
-use roxblnfk\Soco\SymbolMap\ConsoleColorSymbolMap;
+use roxblnfk\Soco\SymbolMap\StandardSymbolMap;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\StreamableInputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -59,32 +54,6 @@ class PlayCommand extends Command
 
     public function execute(InputInterface $input, OutputInterface $output): int
     {
-        $levelId = $input->getArgument('LevelId');
-
-        $screen = new Screen($output);
-        # input stream
-        if ($input instanceof StreamableInputInterface && $stream = $input->getStream()) {
-            $inputStream = $stream;
-        } else {
-            $inputStream = STDIN;
-        }
-
-        $level = $this->groupRepository->getRandom()->levels->getRandom();
-
-        // $level->tiles->outputSymbolMap = ConsoleSymbolMap::class;
-        $level->tiles->outputSymbolMap = ConsoleColorSymbolMap::class;
-
-        $game = new ActiveGameModel(null, null, $level->tiles, null);
-        $visualizer = new GameVisualizer($game, $screen);
-        $title = [];
-        strlen($level->levelGroup->groupName) and $title[] = $level->levelGroup->groupName;
-        strlen($level->levelName) and $title[] = $level->levelName;
-        $visualizer->title = implode(' -> ', $title);
-
-        $controlsManager = new WasdControl($game->getCommandsQueue());
-
-
-
         $app = new \Boson\Application(
             new \Boson\ApplicationCreateInfo(
                 schemes: ['soco'],
@@ -92,29 +61,37 @@ class PlayCommand extends Command
                 window: new WindowCreateInfo(webview: new WebViewCreateInfo(contextMenu: true)),
             )
         );
+
+        $level = $this->groupRepository->getRandom()->levels->getRandom();
+
+        // $level->tiles->outputSymbolMap = ConsoleSymbolMap::class;
+        $level->tiles->outputSymbolMap = StandardSymbolMap::class;
+
+        $game = new ActiveGameModel(null, null, $level->tiles, null);
+        $visualizer = new GameVisualizer($game, $app->webview);
+        $title = [];
+        strlen((string) $level->levelGroup?->groupName) and $title[] = $level->levelGroup->groupName;
+        strlen($level->levelName) and $title[] = $level->levelName;
+        $visualizer->title = implode(' -> ', $title);
+
+        $controlsManager = new WasdControl($game->getCommandsQueue());
+
+
         $static = new FilesystemStaticAdapter(['resources/frontend']);
         $app->on(function (WebViewRequest $e) use ($static): void {
             $e->response = $static->lookup($e->request);
         });
-        $app->webview->url = 'soco://localhost:8000/index.html';
+        $app->webview->url = 'soco://localhost/index.html';
 
 
-        $app->webview->bind('keyboard', static function (string $key) use ($controlsManager, $game): void {
+        $app->webview->bind('keyboard', static function (string $key) use ($controlsManager, $game, $visualizer): void {
             $controlsManager->sendSignal($key);
             $game->process();
+            $visualizer->update();
         });
-
+        $visualizer->update();
 
         $app->run();
-
-        // do {
-        //     $visualizer->update();
-        //     $screen->redraw(true);
-        //     // $screen->matrix = array_map('shuffle', $screen->matrix);
-        //     # get input
-        //     $input = fgets($inputStream);
-        //     $controlsManager->sendSignal($input);
-        //     $game->process();
-        // } while (true);
+        return 0;
     }
 }

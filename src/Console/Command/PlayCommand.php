@@ -7,9 +7,9 @@
 namespace roxblnfk\Soco\Console\Command;
 
 use roxblnfk\Soco\ActiveGameModel;
+use roxblnfk\Soco\Console\GameVisualizer;
 use roxblnfk\Soco\Console\Helper\Screen;
 use roxblnfk\Soco\Control\WasdControl;
-use roxblnfk\Soco\GameVisualizer;
 use roxblnfk\Soco\Repository\LevelGroupRepositoryInterface;
 use roxblnfk\Soco\Repository\LevelRepositoryInterface;
 use roxblnfk\Soco\SymbolMap\ConsoleColorSymbolMap;

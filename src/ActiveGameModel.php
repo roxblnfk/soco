@@ -229,12 +229,10 @@ class ActiveGameModel
         }
         return $action;
     }
-    protected function restartLevel()
+    protected function restartLevel(): void
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
         $this->levelTiles->unserialize($this->levelTilesOrigin);
         $this->startLevel();
-        return null;
     }
     protected function rollbackAction()
     {
