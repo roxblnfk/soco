@@ -4,8 +4,14 @@
  * Date: 16.06.2019
  */
 
-namespace roxblnfk\Soco\Console\Command;
+namespace roxblnfk\Soco\Boson;
 
+use Boson\ApplicationPollerInterface;
+use Boson\Bridge\Static\FilesystemStaticAdapter;
+use Boson\WebView\Event\WebViewRequest;
+use Boson\WebView\WebViewCreateInfo;
+use Boson\Window\WindowCreateInfo;
+use Buggregator\Trap\Processable;
 use roxblnfk\Soco\ActiveGameModel;
 use roxblnfk\Soco\Console\Helper\Screen;
 use roxblnfk\Soco\Control\WasdControl;
@@ -77,14 +83,38 @@ class PlayCommand extends Command
 
         $controlsManager = new WasdControl($game->getCommandsQueue());
 
-        do {
-            $visualizer->update();
-            $screen->redraw(true);
-            // $screen->matrix = array_map('shuffle', $screen->matrix);
-            # get input
-            $input = fgets($inputStream);
-            $controlsManager->sendSignal($input);
+
+
+        $app = new \Boson\Application(
+            new \Boson\ApplicationCreateInfo(
+                schemes: ['soco'],
+                debug: false,
+                window: new WindowCreateInfo(webview: new WebViewCreateInfo(contextMenu: true)),
+            )
+        );
+        $static = new FilesystemStaticAdapter(['resources/frontend']);
+        $app->on(function (WebViewRequest $e) use ($static): void {
+            $e->response = $static->lookup($e->request);
+        });
+        $app->webview->url = 'soco://localhost:8000/index.html';
+
+
+        $app->webview->bind('keyboard', static function (string $key) use ($controlsManager, $game): void {
+            $controlsManager->sendSignal($key);
             $game->process();
-        } while (true);
+        });
+
+
+        $app->run();
+
+        // do {
+        //     $visualizer->update();
+        //     $screen->redraw(true);
+        //     // $screen->matrix = array_map('shuffle', $screen->matrix);
+        //     # get input
+        //     $input = fgets($inputStream);
+        //     $controlsManager->sendSignal($input);
+        //     $game->process();
+        // } while (true);
     }
 }

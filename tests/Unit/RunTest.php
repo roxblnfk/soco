@@ -4,7 +4,6 @@ namespace roxblnfk\Soco\Tests\Unit;
 
 use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
-use roxblnfk\Soco\Console\Command\PlayCommand;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class RunTest extends TestCase {
@@ -18,7 +17,7 @@ class RunTest extends TestCase {
         $builder->addDefinitions(dirname(__DIR__, 2) . '/config/console.php');
         $container = $builder->build();
 
-        $command = $container->get(PlayCommand::class);
+        $command = $container->get(\roxblnfk\Soco\Boson\PlayCommand::class);
         $tester = new CommandTester($command);
         $tester->execute([], []);
     }
